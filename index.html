@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Low-Bandwidth Radio - Playlist & Live Mic</title>
+    <title>Low-Bandwidth Radio - Secure Studio</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         * {
@@ -81,7 +81,6 @@
             border: 1px solid rgba(239, 68, 68, 0.4);
         }
 
-        /* হোস্টের প্লেলিস্ট ও কন্ট্রোল প্যানেল */
         .host-controls {
             width: 100%;
             display: flex;
@@ -112,7 +111,6 @@
             text-overflow: ellipsis;
         }
 
-        /* প্লেয়ার কন্ট্রোল বাটনসমূহ */
         .controls-row {
             display: flex;
             justify-content: center;
@@ -152,16 +150,38 @@
             border-radius: 10px;
             width: 100%;
         }
+
+        /* এক্সেস ব্লক মেসেজ */
+        #access-denied {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 15px;
+            padding: 30px;
+            background: #1e293b;
+            border-radius: 20px;
+            border: 1px solid #ef4444;
+            max-width: 320px;
+        }
     </style>
 </head>
 <body>
 
     <!-- মোড সিলেক্টর -->
     <div id="mode-screen">
-        <h2 style="color: #38bdf8; margin-bottom: 5px;">Low-Bandwidth Radio FM</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;">2G/1G নেটওয়ার্কে ফাইল প্লেলিস্ট ও লাইভ এফএম</p>
+        <h2 style="color: #38bdf8; margin-bottom: 5px;">Accessories Radio 96.0 FM</h2>
+        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;"> লাইভ এফএম</p>
         <button class="btn-main" onclick="startBroadcaster()">📻 আরজে/স্টুডিও (Host Panel)</button>
         <button class="btn-main btn-listener" onclick="startListener()">🎧 শ্রোতা (Listener)</button>
+    </div>
+
+    <!-- ব্লক মেসেজ UI -->
+    <div id="access-denied">
+        <h3 style="color: #ef4444;">⚠️ স্টুডিও ইতিমধ্যেই ব্যস্ত!</h3>
+        <p style="font-size: 13px; color: #94a3b8;">অন্য কোনো ডিভাইস থেকে ইতিমধ্যেই আরজে স্টুডিও চালানো হচ্ছে। একটি স্টুডিও থেকে মাত্র একজন হোস্টই ব্রডকাস্ট করতে পারবেন।</p>
+        <button class="btn-main btn-listener" onclick="location.reload()">শ্রোতা হিসেবে যোগ দিন</button>
     </div>
 
     <!-- রেডিও ইন্টারফেস -->
@@ -191,7 +211,6 @@
         </div>
     </div>
 
-    <!-- ব্যাকগ্রাউন্ড অডিও ট্র্যাক (হোস্টের জন্য) -->
     <audio id="audio-player" style="display: none;"></audio>
 
     <script>
@@ -202,7 +221,6 @@
         let audioFiles = [];
         let currentTrackIndex = 0;
 
-        // অডিও মিক্সিং এর জন্য Web Audio API কনটেক্সট
         let audioCtx, destinationNode, micStream, micNode;
 
         const actionBtn = document.getElementById('action-btn');
@@ -215,19 +233,37 @@
         const audioPlayer = document.getElementById('audio-player');
         const fileInput = document.getElementById('audio-files');
 
-        // ১. হোস্ট বা ব্রডকাস্টার মোড
+        // ১. হোস্ট বা ব্রডকাস্টার মোড চেক ও রেজিস্টার
         function startBroadcaster() {
             isHost = true;
             document.getElementById('mode-screen').style.display = 'none';
-            document.getElementById('radio-card').style.display = 'flex';
-            hostPanel.style.display = 'flex';
-            micBtn.style.display = 'flex';
-            
-            cardTitle.innerText = "স্টুডিও কন্ট্রোল (Host)";
-            infoText.innerText = "গান আপলোড করে প্লে চাপুন, যেকোনো সময় মাইক অন করতে পারবেন";
 
-            setupAudioMixingEngine();
-            initPeerHost();
+            // হোস্ট পেয়ার আইডি চেক করা
+            peer = new Peer(RADIO_HOST_ID, {
+                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+            });
+
+            // সফলভাবে আইডি পেলে হোস্ট প্যানেল দেখাবে
+            peer.on('open', () => {
+                document.getElementById('radio-card').style.display = 'flex';
+                hostPanel.style.display = 'flex';
+                micBtn.style.display = 'flex';
+                cardTitle.innerText = "স্টুডিও কন্ট্রোল (Host)";
+                statusBadge.innerText = "স্টুডিও অনলাইন";
+                infoText.innerText = "গান আপলোড করে প্লে চাপুন, যেকোনো সময় মাইক অন করতে পারবেন";
+                
+                setupAudioMixingEngine();
+                setupHostEvents();
+            });
+
+            // যদি এই আইডি ইতোমধ্যে অন্য কোথাও ব্যবহার হতে থাকে (Unavailable ID error)
+            peer.on('error', (err) => {
+                if (err.type === 'unavailable-id') {
+                    document.getElementById('access-denied').style.display = 'flex';
+                } else {
+                    alert("সংযোগ ত্রুটি: " + err.type);
+                }
+            });
         }
 
         // ২. শ্রোতা বা লিসেনার মোড
@@ -242,7 +278,7 @@
             initPeerListener();
         }
 
-        // --- অডিও ফাইল প্রসেসিং এবং অটো-নেক্সট ট্র্যাকিং ---
+        // --- প্লেলিস্ট ও ফাইল প্রসেসিং ---
         fileInput.addEventListener('change', (e) => {
             audioFiles = Array.from(e.target.files);
             if (audioFiles.length > 0) {
@@ -253,7 +289,7 @@
 
         function playTrack(index) {
             if (index >= audioFiles.length) {
-                currentTrackIndex = 0; // প্লেলিস্ট শেষ হলে আবার প্রথম থেকে চলবে
+                currentTrackIndex = 0;
             }
             if (audioFiles.length === 0) return;
 
@@ -263,31 +299,27 @@
             nowPlaying.innerText = `এখন বাজছে: ${file.name}`;
         }
 
-        // গান শেষ হলে অটোমেটিক পরবর্তী গান চালু হওয়া
         audioPlayer.addEventListener('ended', () => {
             currentTrackIndex++;
             playTrack(currentTrackIndex);
         });
 
-        // --- অডিও ইনপুট মিক্সিং (গান + মাইক) ---
         function setupAudioMixingEngine() {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             destinationNode = audioCtx.createMediaStreamDestination();
 
-            // অডিও প্লেয়ারের গানকে স্ট্রিমের সাথে যুক্ত করা
             const sourceNode = audioCtx.createMediaElementSource(audioPlayer);
             sourceNode.connect(destinationNode);
-            sourceNode.connect(audioCtx.destination); // হোস্ট নিজেও শুনতে পাবে
+            sourceNode.connect(audioCtx.destination);
         }
 
-        // --- মাইক অন/অফ লজিক ---
         let isMicActive = false;
         micBtn.addEventListener('click', async () => {
             if (!isMicActive) {
                 try {
                     micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
                     micNode = audioCtx.createMediaStreamSource(micStream);
-                    micNode.connect(destinationNode); // মাইকের আওয়াজ ব্রডকাস্ট স্ট্রিমে যোগ হলো
+                    micNode.connect(destinationNode);
                     
                     isMicActive = true;
                     micBtn.classList.add('active');
@@ -305,17 +337,7 @@
             }
         });
 
-        // --- হোস্ট পেয়ার সার্ভার সেটআপ ---
-        function initPeerHost() {
-            peer = new Peer(RADIO_HOST_ID, {
-                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-            });
-
-            peer.on('open', () => {
-                statusBadge.innerText = "স্টুডিও অনলাইন";
-            });
-
-            // লিসেনার কানেক্ট করলে তাকে গান ও মাইকের মিক্স করা অডিও স্ট্রিম পাঠানো
+        function setupHostEvents() {
             peer.on('call', call => {
                 call.answer(destinationNode.stream);
             });
@@ -344,7 +366,6 @@
             });
         }
 
-        // --- লিসেনার লজিক ---
         function initPeerListener() {
             peer = new Peer({
                 config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
