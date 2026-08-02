@@ -1,449 +1,209 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-   
     <meta name="google-site-verification" content="JibFTex5VrU3ZxcZvxIz3nBAFQNScH55IhD-t_VVBt4" />
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Low-Bandwidth Radio - Secure Studio</title>
+    <title>Accessories Radio - Zero-Signal Live Stream</title>
     
-    <!-- Open Graph / Facebook / WhatsApp Meta Tags -->
+    <!-- Meta Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://arradio.shop/">
-    <meta property="og:title" content="Accessories Roy Live Radio Broadcasting Network">
-    <meta property="og:description" content="Listen to live radio streams seamlessly in low bandwidth.">
+    <meta property="og:title" content="Accessories Roy Live Radio Network">
+    <meta property="og:description" content="Auto-connecting zero-bandwidth live radio stream.">
     <meta property="og:image" content="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
-
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Low Bandwidth Live Radio FM">
-    <meta name="twitter:description" content="Listen to live radio streams seamlessly in low bandwidth.">
-    <meta name="twitter:image" content="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
     
-    
-   <!-- Favicon Tag for Browser Tab -->
-<link rel="icon" type="image/x-icon" href="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
-    
+    <link rel="icon" type="image/x-icon" href="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body, html {
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             background: #0f172a;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #f8fafc;
-        }
-
-        #mode-screen {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 85%;
-            max-width: 320px;
-            text-align: center;
-        }
-        .btn-main {
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: #fff;
-            border: none;
-            padding: 18px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
-            transition: all 0.2s ease;
-        }
-        .btn-main:active { transform: scale(0.96); }
-        .btn-listener {
-            background: linear-gradient(135deg, #059669, #10b981);
-            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+            display: flex; justify-content: center; align-items: center; color: #f8fafc;
         }
 
         .radio-card {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            width: 90%;
-            max-width: 380px;
-            min-height: 85vh;
-            background: #1e293b;
-            border: 1px solid #334155;
-            border-radius: 24px;
-            padding: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            width: 90%; max-width: 360px; height: 380px;
+            background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 25px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
         }
 
-        .radio-header { text-align: center; width: 100%; }
-        .radio-title { font-size: 20px; font-weight: 700; color: #38bdf8; margin-bottom: 5px; }
+        .radio-title { font-size: 20px; font-weight: 700; color: #38bdf8; margin-bottom: 6px; }
         .badge {
-            display: inline-block;
-            font-size: 12px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            background: #334155;
-            color: #94a3b8;
+            display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 20px;
+            background: #334155; color: #94a3b8; transition: all 0.3s;
         }
         .badge.live {
-            background: rgba(239, 68, 68, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .badge.reconnecting {
+            background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);
         }
 
-        .host-controls {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin: 15px 0;
-        }
-        .file-input-btn {
-            background: #334155;
-            border: 1px dashed #38bdf8;
-            color: #38bdf8;
-            padding: 12px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-        }
-        .now-playing-box {
-            background: #0f172a;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #10b981;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .controls-row {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            width: 100%;
-        }
         .control-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: none;
-            background: #2563eb;
-            color: white;
-            font-size: 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+            width: 90px; height: 90px; border-radius: 50%; border: none;
+            background: linear-gradient(135deg, #059669, #10b981); color: white; font-size: 36px;
+            display: flex; justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); transition: transform 0.2s;
         }
-        .mic-btn {
-            background: #475569;
-            box-shadow: none;
-        }
-        .mic-btn.active {
-            background: #ef4444;
-            box-shadow: 0 6px 18px rgba(239, 68, 68, 0.5);
-        }
+        .control-btn:active { transform: scale(0.95); }
 
         .info-box {
-            font-size: 12px;
-            color: #94a3b8;
-            text-align: center;
-            background: #0f172a;
-            padding: 10px;
-            border-radius: 10px;
-            width: 100%;
-        }
-
-        /* এক্সেস ব্লক মেসেজ */
-        #access-denied {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            gap: 15px;
-            padding: 30px;
-            background: #1e293b;
-            border-radius: 20px;
-            border: 1px solid #ef4444;
-            max-width: 320px;
+            font-size: 12px; color: #94a3b8; background: #0f172a;
+            padding: 12px; border-radius: 12px; width: 100%;
         }
     </style>
 </head>
 <body>
 
-    <!-- মোড সিলেক্টর -->
-    <div id="mode-screen">
-        <h2 style="color: #38bdf8; margin-bottom: 5px;">Accessories Radio 96.0 FM</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 15px;"> লাইভ এফএম</p>
-        <button class="btn-main" onclick="startBroadcaster()">📻 আরজে/স্টুডিও (Host Panel)</button>
-        <button class="btn-main btn-listener" onclick="startListener()">🎧 শ্রোতা (Listener)</button>
-    </div>
-
-    <!-- ব্লক মেসেজ UI -->
-    <div id="access-denied">
-        <h3 style="color: #ef4444;">⚠️ স্টুডিও ইতিমধ্যেই ব্যস্ত!</h3>
-        <p style="font-size: 13px; color: #94a3b8;">অন্য কোনো ডিভাইস থেকে ইতিমধ্যেই আরজে স্টুডিও চালানো হচ্ছে। একটি স্টুডিও থেকে মাত্র একজন হোস্টই ব্রডকাস্ট করতে পারবেন।</p>
-        <button class="btn-main btn-listener" onclick="location.reload()">শ্রোতা হিসেবে যোগ দিন</button>
-    </div>
-
-    <!-- রেডিও ইন্টারফেস -->
-    <div id="radio-card" class="radio-card">
-        <div class="radio-header">
-            <div class="radio-title" id="card-title">লাইভ রেডিও স্টেশন</div>
-            <div id="status-badge" class="badge">অফলাইন</div>
+    <div class="radio-card">
+        <div>
+            <div class="radio-title">ACCESSORIES RADIO</div>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">জিরো-সিগন্যাল অটো প্লেয়ার</p>
+            <div id="status-badge" class="badge">টিউনিং হচ্ছে...</div>
         </div>
 
-        <!-- হোস্টের অডিও ফাইল সিলেক্ট প্যানেল -->
-        <div id="host-panel" class="host-controls" style="display: none;">
-            <label class="file-input-btn">
-                📂 মোবাইল থেকে গান সিলেক্ট করুন (Multiple MP3)
-                <input type="file" id="audio-files" accept="audio/*" multiple style="display: none;">
-            </label>
-            <div id="now-playing" class="now-playing-box">কোনো গান লোড করা হয়নি</div>
-        </div>
-
-        <!-- প্লেয়ার/মাইক কন্ট্রোল বাটন -->
-        <div class="controls-row">
-            <button id="mic-btn" class="control-btn mic-btn" style="display: none;">🎙️</button>
-            <button id="action-btn" class="control-btn">▶</button>
-        </div>
+        <!-- প্লেয়ার বোতাম -->
+        <button id="play-btn" class="control-btn">▶</button>
 
         <div class="info-box" id="info-text">
-            ব্যান্ডউইথ: Opus Compressed (1G/2G Compatible)
+            একবার প্লে চাপুন, সিগন্যাল চলে গেলেও ব্যাকগ্রাউন্ডে অটো-কানেক্ট হতে থাকবে।
         </div>
     </div>
-
-    <audio id="audio-player" style="display: none;"></audio>
 
     <script>
         const RADIO_HOST_ID = 'low_bw_radio_station_node_1';
+        let peer = null;
+        let activeCall = null;
+        let isUserActivated = false;
+        let autoReconnectTimer = null;
 
-        let peer;
-        let isHost = false;
-        let audioFiles = [];
-        let currentTrackIndex = 0;
-
-        let audioCtx, destinationNode, micStream, micNode;
-
-        const actionBtn = document.getElementById('action-btn');
-        const micBtn = document.getElementById('mic-btn');
+        const playBtn = document.getElementById('play-btn');
         const statusBadge = document.getElementById('status-badge');
-        const cardTitle = document.getElementById('card-title');
-        const hostPanel = document.getElementById('host-panel');
-        const nowPlaying = document.getElementById('now-playing');
         const infoText = document.getElementById('info-text');
-        const audioPlayer = document.getElementById('audio-player');
-        const fileInput = document.getElementById('audio-files');
 
-       
+        // পিয়ার সংযোগ তৈরি
+        function initPeer() {
+            if (peer) return;
 
-       
-       // ১. হোস্ট বা ব্রডকাস্টার মোড চেক ও রেজিস্টার (Password Protected)
-        function startBroadcaster() {
-            const HOST_PASSWORD = "PRABIR "; // 👈 আপনার সিক্রেট পাসওয়ার্ড
-            
-            const userPass = prompt("🔒 হোস্ট প্যানেলে প্রবেশের জন্য পাসওয়ার্ড দিন:");
-            
-            if (userPass === null) return;
-            
-            if (userPass !== HOST_PASSWORD) {
-                alert("❌ ভুল পাসওয়ার্ড! আপনি হোস্ট প্যানেলে প্রবেশ করতে পারবেন না।");
-                return;
-            }
-
-            isHost = true;
-            document.getElementById('mode-screen').style.display = 'none';
-
-            // হোস্ট পেয়ার আইডি চেক করা
-            peer = new Peer(RADIO_HOST_ID, {
-                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-            });
-
-            // সফলভাবে আইডি পেলে হোস্ট প্যানেল দেখাবে
-            peer.on('open', () => {
-                document.getElementById('radio-card').style.display = 'flex';
-                hostPanel.style.display = 'flex';
-                micBtn.style.display = 'flex';
-                cardTitle.innerText = "স্টুডিও কন্ট্রোল (Host)";
-                statusBadge.innerText = "স্টুডিও অনলাইন";
-                infoText.innerText = "গান আপলোড করে প্লে চাপুন, যেকোনো সময় মাইক অন করতে পারবেন";
-                
-                setupAudioMixingEngine();
-                setupHostEvents();
-            });
-
-            // যদি এই আইডি ইতোমধ্যে অন্য কোথাও ব্যবহার হতে থাকে (Unavailable ID error)
-            peer.on('error', (err) => {
-                if (err.type === 'unavailable-id') {
-                    document.getElementById('access-denied').style.display = 'flex';
-                } else {
-                    alert("সংযোগ ত্রুটি: " + err.type);
-                }
-            });
-        }
-
-        
-       
-       
-       
-       // ২. শ্রোতা বা লিসেনার মোড
-        function startListener() {
-            isHost = false;
-            document.getElementById('mode-screen').style.display = 'none';
-            document.getElementById('radio-card').style.display = 'flex';
-            
-            cardTitle.innerText = "ACCESSORIES RADIO 96.0 FM";
-            infoText.innerText = "প্লে বাটনে চাপ দিলে ২জি নেটওয়ার্কেও রেডিও সরাসরি চালু হবে";
-
-            initPeerListener();
-        }
-
-        // --- প্লেলিস্ট ও ফাইল প্রসেসিং ---
-        fileInput.addEventListener('change', (e) => {
-            audioFiles = Array.from(e.target.files);
-            if (audioFiles.length > 0) {
-                currentTrackIndex = 0;
-                nowPlaying.innerText = `রেডি: ${audioFiles.length}টি গান লোড হয়েছে`;
-            }
-        });
-
-        function playTrack(index) {
-            if (index >= audioFiles.length) {
-                currentTrackIndex = 0;
-            }
-            if (audioFiles.length === 0) return;
-
-            const file = audioFiles[currentTrackIndex];
-            audioPlayer.src = URL.createObjectURL(file);
-            audioPlayer.play();
-            nowPlaying.innerText = `এখন বাজছে: ${file.name}`;
-        }
-
-        audioPlayer.addEventListener('ended', () => {
-            currentTrackIndex++;
-            playTrack(currentTrackIndex);
-        });
-
-        function setupAudioMixingEngine() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            destinationNode = audioCtx.createMediaStreamDestination();
-
-            const sourceNode = audioCtx.createMediaElementSource(audioPlayer);
-            sourceNode.connect(destinationNode);
-            sourceNode.connect(audioCtx.destination);
-        }
-
-        let isMicActive = false;
-        micBtn.addEventListener('click', async () => {
-            if (!isMicActive) {
-                try {
-                    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    micNode = audioCtx.createMediaStreamSource(micStream);
-                    micNode.connect(destinationNode);
-                    
-                    isMicActive = true;
-                    micBtn.classList.add('active');
-                    infoText.innerText = "🎙️ মাইক অন আছে (গানের সাথে আপনার কথা যাচ্ছে)";
-                } catch (err) {
-                    alert("মাইক পারমিশন দেওয়া হয়নি!");
-                }
-            } else {
-                if (micStream) {
-                    micStream.getTracks().forEach(track => track.stop());
-                }
-                isMicActive = false;
-                micBtn.classList.remove('active');
-                infoText.innerText = "মাইক বন্ধ করা হয়েছে";
-            }
-        });
-
-        function setupHostEvents() {
-            peer.on('call', call => {
-                call.answer(destinationNode.stream);
-            });
-
-            actionBtn.addEventListener('click', () => {
-                if (audioFiles.length === 0) {
-                    alert("দয়া করে অন্তত একটি MP3 অডিও ফাইল সিলেক্ট করুন!");
-                    return;
-                }
-
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-
-                if (audioPlayer.paused) {
-                    playTrack(currentTrackIndex);
-                    actionBtn.innerText = "⏸";
-                    statusBadge.innerText = "LIVE 🔴";
-                    statusBadge.classList.add('live');
-                } else {
-                    audioPlayer.pause();
-                    actionBtn.innerText = "▶";
-                    statusBadge.innerText = "পজ করা হয়েছে";
-                    statusBadge.classList.remove('live');
-                }
-            });
-        }
-
-        function initPeerListener() {
             peer = new Peer({
                 config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
             });
 
             peer.on('open', () => {
-                statusBadge.innerText = "রেডিও টিউনড";
+                if (isUserActivated && !activeCall) {
+                    startAutoConnectionLoop();
+                } else if (!isUserActivated) {
+                    statusBadge.innerText = "প্লে বোতামে চাপ দিন";
+                }
             });
 
-            actionBtn.addEventListener('click', connectToRadio);
+            peer.on('error', (err) => {
+                console.log("Peer Connection Error:", err.type);
+                // যেকোনো কানেকশন এরর হলে ৩ সেকেন্ড পর অটো রিট্রাই করবে
+                scheduleReconnect();
+            });
+
+            peer.on('disconnected', () => {
+                scheduleReconnect();
+            });
         }
 
-        function connectToRadio() {
-            statusBadge.innerText = "কানেক্ট হচ্ছে...";
-            
+        // ব্যবহারকারী প্লে বোতাম টিপলে এক্টিভ হবে
+        playBtn.addEventListener('click', () => {
+            isUserActivated = true;
+            if (!peer || peer.destroyed) {
+                initPeer();
+            } else {
+                startAutoConnectionLoop();
+            }
+        });
+
+        // অটো কানেক্ট লুপ
+        function startAutoConnectionLoop() {
+            if (!isUserActivated) return;
+
+            statusBadge.innerText = "কানেক্ট করা হচ্ছে...";
+            statusBadge.className = "badge reconnecting";
+            infoText.innerText = "সিগন্যাল খোঁজা হচ্ছে...";
+
+            attemptCall();
+        }
+
+        // স্টুডিওতে কল করার চেষ্টা
+        function attemptCall() {
+            if (!peer || peer.disconnected) {
+                scheduleReconnect();
+                return;
+            }
+
+            // আগের কোনো কল থাকলে তা বন্ধ করা
+            if (activeCall) {
+                activeCall.close();
+            }
+
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const dest = ctx.createMediaStreamDestination();
 
-            const call = peer.call(RADIO_HOST_ID, dest.stream);
+            activeCall = peer.call(RADIO_HOST_ID, dest.stream);
 
-            if (call) {
-                call.on('stream', remoteStream => {
+            if (activeCall) {
+                let connected = false;
+
+                activeCall.on('stream', remoteStream => {
+                    connected = true;
+                    clearTimeout(autoReconnectTimer);
+
                     const audio = new Audio();
                     audio.srcObject = remoteStream;
-                    audio.play();
+                    audio.play().catch(e => console.log("Auto-play prevented", e));
 
-                    actionBtn.innerText = "🔊";
+                    playBtn.innerText = "🔊";
                     statusBadge.innerText = "LIVE 🔴";
-                    statusBadge.classList.add('live');
-                    infoText.innerText = "২জি সিগন্যালেও গান স্মুথভাবে প্লে হচ্ছে!";
+                    statusBadge.className = "badge live";
+                    infoText.innerText = "লাইভ অডিও চালু আছে। নেটওয়ার্ক কমলেও সমস্যা নেই।";
                 });
-            }
 
-            setTimeout(() => {
-                if (!statusBadge.classList.contains('live')) {
-                    statusBadge.innerText = "হোস্ট গান চালু করেনি বা অফলাইন!";
-                }
-            }, 4000);
+                activeCall.on('close', () => {
+                    scheduleReconnect();
+                });
+
+                activeCall.on('error', () => {
+                    scheduleReconnect();
+                });
+
+                // ৫ সেকেন্ডের মধ্যে অডিও না আসলে পুনরায় কানেক্ট করার চেষ্টা
+                setTimeout(() => {
+                    if (!connected && isUserActivated) {
+                        scheduleReconnect();
+                    }
+                }, 5000);
+
+            } else {
+                scheduleReconnect();
+            }
         }
+
+        // ৩ সেকেন্ড পর পর স্বয়ংক্রিয় রিট্রাই লজিক
+        function scheduleReconnect() {
+            if (!isUserActivated) return;
+
+            statusBadge.innerText = "পুনরায় কানেক্ট হচ্ছে...";
+            statusBadge.className = "badge reconnecting";
+            infoText.innerText = "নেটওয়ার্ক দুর্বল! সিস্টেম একা একাই ট্রাই করছে, অপেক্ষা করুন...";
+
+            clearTimeout(autoReconnectTimer);
+            autoReconnectTimer = setTimeout(() => {
+                attemptCall();
+            }, 3000);
+        }
+
+        // পেজ লোড হওয়ার সাথে সাথে পিয়ার প্রস্তুত রাখা
+        window.addEventListener('load', initPeer);
     </script>
 </body>
 </html>
