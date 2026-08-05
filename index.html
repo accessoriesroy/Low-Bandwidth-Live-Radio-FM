@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Accessories Radio - Zero-Signal Live Stream</title>
     
-    <!-- Meta Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://arradio.shop/">
     <meta property="og:title" content="Accessories Roy Live Radio Network">
@@ -27,9 +26,10 @@
 
         .radio-card {
             display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-            width: 90%; max-width: 360px; height: 380px;
+            width: 90%; max-width: 360px; min-height: 420px;
             background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 25px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
+            gap: 15px;
         }
 
         .radio-title { font-size: 20px; font-weight: 700; color: #38bdf8; margin-bottom: 6px; }
@@ -56,6 +56,25 @@
             font-size: 12px; color: #94a3b8; background: #0f172a;
             padding: 12px; border-radius: 12px; width: 100%;
         }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+            transition: all 0.3s ease;
+            line-height: 1.4;
+        }
+
+        .download-btn:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -67,12 +86,15 @@
             <div id="status-badge" class="badge">টিউনিং হচ্ছে...</div>
         </div>
 
-        <!-- প্লেয়ার বোতাম -->
         <button id="play-btn" class="control-btn">▶</button>
 
         <div class="info-box" id="info-text">
             একবার প্লে চাপুন, সিগন্যাল চলে গেলেও ব্যাকগ্রাউন্ডে অটো-কানেক্ট হতে থাকবে।
         </div>
+
+        <a href="Https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1785922070537" class="download-btn" target="_blank">
+            📱 এখানে ক্লিক করে রেডিও অ্যাপটি আপনার মোবাইলে ডাউনলোড এবং ইন্সটল করে নিতে পারেন
+        </a>
     </div>
 
     <script>
@@ -176,12 +198,12 @@
                     scheduleReconnect();
                 });
 
-                // ৫ সেকেন্ডের মধ্যে অডিও না আসলে পুনরায় কানেক্ট করার চেষ্টা
+                // 3 সেকেন্ডের মধ্যে অডিও না আসলে পুনরায় কানেক্ট করার চেষ্টা
                 setTimeout(() => {
                     if (!connected && isUserActivated) {
                         scheduleReconnect();
                     }
-                }, 5000);
+                }, 3000);
 
             } else {
                 scheduleReconnect();
