@@ -82,14 +82,14 @@
     <div class="radio-card">
         <div>
             <div class="radio-title">ACCESSORIES RADIO</div>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">জিরো-সিগন্যাল অটো প্লেয়ার</p>
-            <div id="status-badge" class="badge">টিউনিং হচ্ছে...</div>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Zero-signal auto player</p>
+            <div id="status-badge" class="badge"> Tuning......</div>
         </div>
 
         <button id="play-btn" class="control-btn">▶</button>
 
         <div class="info-box" id="info-text">
-            একবার প্লে চাপুন, সিগন্যাল চলে গেলেও ব্যাকগ্রাউন্ডে অটো-কানেক্ট হতে থাকবে।
+            Press play once; even if the signal goes away, it will keep auto-connecting in the background.
         </div>
 
         <a href="Https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1785922070537" class="download-btn" target="_blank">
@@ -120,7 +120,7 @@
                 if (isUserActivated && !activeCall) {
                     startAutoConnectionLoop();
                 } else if (!isUserActivated) {
-                    statusBadge.innerText = "প্লে বোতামে চাপ দিন";
+                    statusBadge.innerText = "Press the play button";
                 }
             });
 
@@ -149,9 +149,9 @@
         function startAutoConnectionLoop() {
             if (!isUserActivated) return;
 
-            statusBadge.innerText = "কানেক্ট করা হচ্ছে...";
+            statusBadge.innerText = "Connecting...";
             statusBadge.className = "badge reconnecting";
-            infoText.innerText = "সিগন্যাল খোঁজা হচ্ছে...";
+            infoText.innerText = "  Searching for signal... ";
 
             attemptCall();
         }
@@ -187,7 +187,7 @@
                     playBtn.innerText = "🔊";
                     statusBadge.innerText = "LIVE 🔴";
                     statusBadge.className = "badge live";
-                    infoText.innerText = "লাইভ অডিও চালু আছে। নেটওয়ার্ক কমলেও সমস্যা নেই।";
+                    infoText.innerText = "Live audio is running. No problem even if the network is low.";
                 });
 
                 activeCall.on('close', () => {
@@ -203,7 +203,7 @@
                     if (!connected && isUserActivated) {
                         scheduleReconnect();
                     }
-                }, 3000);
+                }, 1000);
 
             } else {
                 scheduleReconnect();
@@ -214,14 +214,14 @@
         function scheduleReconnect() {
             if (!isUserActivated) return;
 
-            statusBadge.innerText = "পুনরায় কানেক্ট হচ্ছে...";
+            statusBadge.innerText = "Reconnecting...";
             statusBadge.className = "badge reconnecting";
-            infoText.innerText = "নেটওয়ার্ক দুর্বল! সিস্টেম একা একাই ট্রাই করছে, অপেক্ষা করুন...";
+            infoText.innerText = "Weak network!! The system is trying automatically, please wait...";
 
             clearTimeout(autoReconnectTimer);
             autoReconnectTimer = setTimeout(() => {
                 attemptCall();
-            }, 3000);
+            }, 1000);
         }
 
         // পেজ লোড হওয়ার সাথে সাথে পিয়ার প্রস্তুত রাখা
