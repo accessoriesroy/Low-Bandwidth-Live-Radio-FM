@@ -1,0 +1,20 @@
+{
+  "short_name": "AR RADIO",
+  "name": "AR RADIO",
+  "icons": [
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "logo.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "https://www.webtonative.com/api/v1/demo/download/6a72fef3020",
+  "background_color": "#0d1b2a",
+  "theme_color": "#0d1b2a",
+  "display": "standalone"
+}
