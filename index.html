@@ -1,15 +1,20 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
     <meta name="google-site-verification" content="JibFTex5VrU3ZxcZvxIz3nBAFQNScH55IhD-t_VVBt4" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Accessories Radio - Zero-Signal Live Stream</title>
+    <title>Accessories Radio 96.0 FM - Live Stream</title>
     
+    <!-- PWA Manifest File Link -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0f172a">
+
+    <!-- Open Graph / Meta Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://arradio.shop/">
     <meta property="og:title" content="Accessories Roy Live Radio Network">
-    <meta property="og:description" content="Auto-connecting zero-bandwidth live radio stream.">
+    <meta property="og:description" content="Listen to live radio streams seamlessly in low bandwidth.">
     <meta property="og:image" content="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
     
     <link rel="icon" type="image/x-icon" href="https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg">
@@ -29,203 +34,213 @@
             width: 90%; max-width: 360px; min-height: 420px;
             background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 25px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
-            gap: 15px;
         }
 
         .radio-title { font-size: 20px; font-weight: 700; color: #38bdf8; margin-bottom: 6px; }
         .badge {
             display: inline-block; font-size: 12px; padding: 4px 12px; border-radius: 20px;
-            background: #334155; color: #94a3b8; transition: all 0.3s;
+            background: #334155; color: #94a3b8;
         }
         .badge.live {
             background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);
         }
-        .badge.reconnecting {
-            background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4);
-        }
 
         .control-btn {
-            width: 90px; height: 90px; border-radius: 50%; border: none;
-            background: linear-gradient(135deg, #059669, #10b981); color: white; font-size: 36px;
-            display: flex; justify-content: center; align-items: center; cursor: pointer;
-            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); transition: transform 0.2s;
+            width: 90px !important;
+            height: 90px !important;
+            min-width: 90px !important;
+            min-height: 90px !important;
+            border-radius: 50% !important;
+            border: none !important;
+            background: linear-gradient(135deg, #10b981, #059669) !important;
+            color: #ffffff !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            cursor: pointer !important;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.6), inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
+            transition: all 0.3s ease !important;
+            margin: 15px auto !important;
+            outline: none !important;
         }
-        .control-btn:active { transform: scale(0.95); }
+
+        .control-btn:hover {
+            transform: scale(1.08) !important;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.8), inset 0 0 15px rgba(255, 255, 255, 0.5) !important;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95) !important;
+        }
+
+        .control-btn svg, .control-btn i {
+            width: 40px !important;
+            height: 40px !important;
+            fill: #ffffff !important;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) !important;
+        }
 
         .info-box {
             font-size: 12px; color: #94a3b8; background: #0f172a;
             padding: 12px; border-radius: 12px; width: 100%;
         }
 
-        .download-btn {
-            display: block;
-            width: 100%;
-            padding: 10px 14px;
-            background: linear-gradient(135deg, #0284c7, #0369a1);
-            color: #ffffff;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
-            transition: all 0.3s ease;
-            line-height: 1.4;
+        .radio-notice-ticker {
+            width: 100% !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            border: 1px solid rgba(56, 189, 248, 0.3) !important;
+            border-radius: 20px !important;
+            padding: 6px 12px !important;
+            margin-bottom: 12px !important;
+            overflow: hidden !important;
+            display: flex !important;
+            align-items: center !important;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.4) !important;
         }
 
-        .download-btn:active {
-            transform: scale(0.98);
+        .radio-notice-ticker marquee {
+            color: #38bdf8 !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            display: block !important;
+        }
+
+        .radio-ad-banner {
+            width: 100%;
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px dashed #38bdf866;
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .ad-badge { font-size: 8px; background: #ef4444; color: white; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+        .ad-title-text { font-size: 12px; color: #f8fafc; font-weight: bold; margin-top: 4px; }
+        .ad-subtitle-text { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+
+        .install-pwa-btn {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            background: #38bdf8;
+            color: #0f172a;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .install-pwa-btn:hover {
+            background: #0284c7;
+            color: #ffffff;
         }
     </style>
 </head>
 <body>
 
     <div class="radio-card">
+        
+        <div class="radio-notice-ticker">
+            <marquee behavior="scroll" direction="left" scrollamount="4">
+                📢 Welcome to the official online radio of Accessories Roy!
+            </marquee>
+        </div>
+
+        <div class="radio-ad-banner" onclick="window.open('https://accessoriesroy.in', '_blank')">
+            <span class="ad-badge">ADVERTISEMENT</span>
+            <div class="ad-title-text">🛍️ 20% OFF on Mobile & Computer Accessories!</div>
+            <div class="ad-subtitle-text">Click here to order (accessoriesroy.in)</div>
+        </div>
+
         <div>
             <div class="radio-title">ACCESSORIES RADIO</div>
-            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Zero-signal auto player</p>
-            <div id="status-badge" class="badge"> Tuning......</div>
+            <p style="font-size: 13px; color: #94a3b8; margin-bottom: 10px;">Live Broadcasting Network</p>
+            <div id="status-badge" class="badge">Tuning in...</div>
         </div>
 
         <button id="play-btn" class="control-btn">▶</button>
 
         <div class="info-box" id="info-text">
-            Press play once; even if the signal goes away, it will keep auto-connecting in the background.
+            Press the play button to listen live even on 2G networks.
         </div>
 
-        <a href="Https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1785922070537" class="download-btn" target="_blank">
-            📱 CLICK download and install
-        </a>
+        <button id="installBtn" class="install-pwa-btn">📲 Add App Icon to Home Screen</button>
     </div>
 
     <script>
         const RADIO_HOST_ID = 'low_bw_radio_station_node_1';
-        let peer = null;
-        let activeCall = null;
-        let isUserActivated = false;
-        let autoReconnectTimer = null;
-
+        let peer;
         const playBtn = document.getElementById('play-btn');
         const statusBadge = document.getElementById('status-badge');
         const infoText = document.getElementById('info-text');
 
-        // পিয়ার সংযোগ তৈরি
-        function initPeer() {
-            if (peer) return;
-
-            peer = new Peer({
-                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-            });
-
-            peer.on('open', () => {
-                if (isUserActivated && !activeCall) {
-                    startAutoConnectionLoop();
-                } else if (!isUserActivated) {
-                    statusBadge.innerText = "Press the play button";
-                }
-            });
-
-            peer.on('error', (err) => {
-                console.log("Peer Connection Error:", err.type);
-                // যেকোনো কানেকশন এরর হলে ৩ সেকেন্ড পর অটো রিট্রাই করবে
-                scheduleReconnect();
-            });
-
-            peer.on('disconnected', () => {
-                scheduleReconnect();
-            });
-        }
-
-        // ব্যবহারকারী প্লে বোতাম টিপলে এক্টিভ হবে
-        playBtn.addEventListener('click', () => {
-            isUserActivated = true;
-            if (!peer || peer.destroyed) {
-                initPeer();
-            } else {
-                startAutoConnectionLoop();
-            }
+        peer = new Peer({
+            config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
         });
 
-        // অটো কানেক্ট লুপ
-        function startAutoConnectionLoop() {
-            if (!isUserActivated) return;
+        peer.on('open', () => {
+            statusBadge.innerText = "Radio Tuned (Ready)";
+        });
 
-            statusBadge.innerText = "Connecting...";
-            statusBadge.className = "badge reconnecting";
-            infoText.innerText = "  Searching for signal... ";
+        playBtn.addEventListener('click', connectToRadio);
 
-            attemptCall();
-        }
-
-        // স্টুডিওতে কল করার চেষ্টা
-        function attemptCall() {
-            if (!peer || peer.disconnected) {
-                scheduleReconnect();
-                return;
-            }
-
-            // আগের কোনো কল থাকলে তা বন্ধ করা
-            if (activeCall) {
-                activeCall.close();
-            }
-
+        function connectToRadio() {
+            statusBadge.innerText = "Connecting to studio...";
+            
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const dest = ctx.createMediaStreamDestination();
 
-            activeCall = peer.call(RADIO_HOST_ID, dest.stream);
+            const call = peer.call(RADIO_HOST_ID, dest.stream);
 
-            if (activeCall) {
-                let connected = false;
-
-                activeCall.on('stream', remoteStream => {
-                    connected = true;
-                    clearTimeout(autoReconnectTimer);
-
+            if (call) {
+                call.on('stream', remoteStream => {
                     const audio = new Audio();
                     audio.srcObject = remoteStream;
-                    audio.play().catch(e => console.log("Auto-play prevented", e));
+                    audio.play();
 
                     playBtn.innerText = "🔊";
                     statusBadge.innerText = "LIVE 🔴";
-                    statusBadge.className = "badge live";
-                    infoText.innerText = "Live audio is running. No problem even if the network is low.";
+                    statusBadge.classList.add('live');
+                    infoText.innerText = "Broadcasting live audio directly from the studio";
                 });
-
-                activeCall.on('close', () => {
-                    scheduleReconnect();
-                });
-
-                activeCall.on('error', () => {
-                    scheduleReconnect();
-                });
-
-                // 3 সেকেন্ডের মধ্যে অডিও না আসলে পুনরায় কানেক্ট করার চেষ্টা
-                setTimeout(() => {
-                    if (!connected && isUserActivated) {
-                        scheduleReconnect();
-                    }
-                }, 1000);
-
-            } else {
-                scheduleReconnect();
             }
+
+            setTimeout(() => {
+                if (!statusBadge.classList.contains('live')) {
+                    statusBadge.innerText = "Studio Offline";
+                    infoText.innerText = "Broadcast is currently offline from the studio.";
+                }
+            }, 4000);
         }
 
-        // ৩ সেকেন্ড পর পর স্বয়ংক্রিয় রিট্রাই লজিক
-        function scheduleReconnect() {
-            if (!isUserActivated) return;
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
 
-            statusBadge.innerText = "Reconnecting...";
-            statusBadge.className = "badge reconnecting";
-            infoText.innerText = "Weak network!! The system is trying automatically, please wait...";
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
 
-            clearTimeout(autoReconnectTimer);
-            autoReconnectTimer = setTimeout(() => {
-                attemptCall();
-            }, 1000);
+        installBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        installBtn.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
         }
-
-        // পেজ লোড হওয়ার সাথে সাথে পিয়ার প্রস্তুত রাখা
-        window.addEventListener('load', initPeer);
     </script>
 </body>
 </html>
