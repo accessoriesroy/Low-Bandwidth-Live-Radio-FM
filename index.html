@@ -142,15 +142,26 @@
 </head>
 <body>
 
-    <div class="radio-card">
+   
+
+
+
+ <div class="radio-card">
         
-        <div class="radio-notice-ticker">
+        
+
+
+
+<div class="radio-notice-ticker">
             <marquee behavior="scroll" direction="left" scrollamount="4">
                 📢 Welcome to the official online radio of Accessories Roy!
             </marquee>
         </div>
 
-        <div class="radio-ad-banner" onclick="window.open('https://accessoriesroy.in', '_blank')">
+        
+
+
+<div class="radio-ad-banner" onclick="window.open('https://accessoriesroy.in', '_blank')">
             <span class="ad-badge">ADVERTISEMENT</span>
             <div class="ad-title-text">🛍️ 20% OFF on Mobile & Computer Accessories!</div>
             <div class="ad-subtitle-text">Click here to order (accessoriesroy.in)</div>
@@ -168,7 +179,27 @@
             Press the play button to listen live even on 2G networks.
         </div>
 
-        <button id="installBtn" class="install-pwa-btn">📲 Add App Icon to Home Screen</button>
+    
+
+<a href="https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1786292802553" download style="
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 13px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+">📲 Download App (APK)</a>
+
+
+
+
+ <button id="installBtn" class="install-pwa-btn">📲 Add App Icon to Home Screen</button>
     </div>
 
     <script>
@@ -241,6 +272,39 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js');
         }
-    </script>
+   
+
+
+
+
+
+  // ব্রাউজার ইন্সটল করার উপযুক্ত হলে বোতামটি দেখাবে
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'inline-block'; 
+  });
+
+  // বোতামে ক্লিক করলে ইন্সটল ডায়ালগ চালু হবে
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    }
+  });
+
+
+
+
+
+ </script>
+
+
+
+
+
+
 </body>
 </html>
