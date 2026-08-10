@@ -142,26 +142,14 @@
 </head>
 <body>
 
-   
-
-
-
- <div class="radio-card">
-        
-        
-
-
-
-<div class="radio-notice-ticker">
+    <div class="radio-card">
+        <div class="radio-notice-ticker">
             <marquee behavior="scroll" direction="left" scrollamount="4">
                 📢 Welcome to the official online radio of Accessories Roy!
             </marquee>
         </div>
 
-        
-
-
-<div class="radio-ad-banner" onclick="window.open('https://accessoriesroy.in', '_blank')">
+        <div class="radio-ad-banner" onclick="window.open('https://accessoriesroy.in', '_blank')">
             <span class="ad-badge">ADVERTISEMENT</span>
             <div class="ad-title-text">🛍️ 20% OFF on Mobile & Computer Accessories!</div>
             <div class="ad-subtitle-text">Click here to order (accessoriesroy.in)</div>
@@ -179,74 +167,266 @@
             Press the play button to listen live even on 2G networks.
         </div>
 
-    
+        <a href="https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1786292802553" download style="
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+        ">📲 Download App (APK)</a>
 
-<a href="https://www.webtonative.com/api/v1/demo/download/6a72fef30200a1eb04dc6ace/ANDROID?t=1786292802553" download style="
-    display: block;
-    width: 100%;
-    margin-top: 15px;
-    padding: 10px;
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 13px;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
-">📲 Download App (APK)</a>
-
-
-
-
- <button id="installBtn" class="install-pwa-btn">📲 Add App Icon to Home Screen</button>
+        <button id="installBtn" class="install-pwa-btn">📲 Add App Icon to Home Screen</button>
     </div>
+
+    <audio id="radio-audio-element" playsinline style="display:none;"></audio>
 
     <script>
         const RADIO_HOST_ID = 'low_bw_radio_station_node_1';
-        let peer;
+        let peer = null;
+        let currentCall = null;
+        let isUserPlaying = false;
+        let isConnectingProcess = false;
+
+        // Recording and Cache Variables
+        let mediaRecorder = null;
+        let cachedChunks = [];
+        let isPlayingBackup = false;
+        let backupObjectURL = null;
+
         const playBtn = document.getElementById('play-btn');
         const statusBadge = document.getElementById('status-badge');
         const infoText = document.getElementById('info-text');
+        const audioElement = document.getElementById('radio-audio-element');
 
-        peer = new Peer({
-            config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
-        });
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Accessories Radio 96.0 FM',
+                    artist: 'Accessories Roy Live',
+                    album: 'Live Stream',
+                    artwork: [
+                        { src: 'https://i.ibb.co/XT5FbLK/558696382-1445472990075070-3199879849015044106-n.jpg', sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
 
-        peer.on('open', () => {
-            statusBadge.innerText = "Radio Tuned (Ready)";
-        });
-
-        playBtn.addEventListener('click', connectToRadio);
-
-        function connectToRadio() {
-            statusBadge.innerText = "Connecting to studio...";
-            
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const dest = ctx.createMediaStreamDestination();
-
-            const call = peer.call(RADIO_HOST_ID, dest.stream);
-
-            if (call) {
-                call.on('stream', remoteStream => {
-                    const audio = new Audio();
-                    audio.srcObject = remoteStream;
-                    audio.play();
-
+                navigator.mediaSession.setActionHandler('play', () => {
+                    audioElement.play();
                     playBtn.innerText = "🔊";
-                    statusBadge.innerText = "LIVE 🔴";
-                    statusBadge.classList.add('live');
-                    infoText.innerText = "Broadcasting live audio directly from the studio";
+                });
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    audioElement.pause();
+                    playBtn.innerText = "▶";
                 });
             }
-
-            setTimeout(() => {
-                if (!statusBadge.classList.contains('live')) {
-                    statusBadge.innerText = "Studio Offline";
-                    infoText.innerText = "Broadcast is currently offline from the studio.";
-                }
-            }, 4000);
         }
+
+        // রেকর্ডিং চালু করা (দ্রুত ক্যাশ তৈরি করা)
+        function startRecordingStream(stream) {
+            try {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+                cachedChunks = [];
+
+                mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) {
+                        cachedChunks.push(e.data);
+                        // সর্বোচ্চ ৩০-৪০ মিনিটের মতো ডাটা মেমরিতে বাফার রাখবে
+                        if (cachedChunks.length > 2400) {
+                            cachedChunks.shift();
+                        }
+                    }
+                };
+                mediaRecorder.start(1000); // প্রতি ১ সেকেন্ডে ডাটা সেভ করবে
+            } catch (e) {
+                console.log("Recording initialization failed", e);
+            }
+        }
+
+        // লাইভ কানেকশন সম্পূর্ণ বন্ধ করে ক্লিন করা
+        function stopLiveConnection() {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                try { mediaRecorder.stop(); } catch(e){}
+            }
+
+            if (currentCall) {
+                try { currentCall.close(); } catch(e){}
+                currentCall = null;
+            }
+
+            if (peer) {
+                try { peer.destroy(); } catch(e){}
+                peer = null;
+            }
+        }
+
+        function connectToRadio() {
+            if (isConnectingProcess) return;
+            isConnectingProcess = true;
+
+            stopLiveConnection();
+
+            if (!isPlayingBackup) {
+                statusBadge.innerText = "Connecting to studio...";
+                infoText.innerText = "Connecting to live radio broadcast...";
+            }
+
+            setupMediaSession();
+
+            peer = new Peer({
+                config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+            });
+
+            peer.on('open', () => {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const dest = ctx.createMediaStreamDestination();
+
+                try {
+                    currentCall = peer.call(RADIO_HOST_ID, dest.stream);
+                } catch(e) {
+                    isConnectingProcess = false;
+                    switchToBackupOrReconnect();
+                    return;
+                }
+
+                let streamConnected = false;
+
+                if (currentCall) {
+                    currentCall.on('stream', remoteStream => {
+                        streamConnected = true;
+                        isConnectingProcess = false;
+
+                        // কানেকশন চলে আসলে ব্যাকআপ মোড বন্ধ
+                        if (isPlayingBackup) {
+                            isPlayingBackup = false;
+                            if (backupObjectURL) {
+                                URL.revokeObjectURL(backupObjectURL);
+                                backupObjectURL = null;
+                            }
+                        }
+
+                        audioElement.pause();
+                        audioElement.removeAttribute('src');
+                        audioElement.srcObject = remoteStream;
+                        audioElement.loop = false;
+
+                        audioElement.play().then(() => {
+                            playBtn.innerText = "🔊";
+                            statusBadge.innerText = "LIVE 🔴";
+                            statusBadge.classList.add('live');
+                            infoText.innerText = "Broadcasting live audio directly from the studio";
+                        }).catch(err => console.log(err));
+
+                        // প্লেইং হওয়ার সাথেই রেকর্ডিং শুরু
+                        startRecordingStream(remoteStream);
+                    });
+
+                    currentCall.on('close', () => {
+                        isConnectingProcess = false;
+                        switchToBackupOrReconnect();
+                    });
+
+                    currentCall.on('error', () => {
+                        isConnectingProcess = false;
+                        switchToBackupOrReconnect();
+                    });
+                }
+
+                setTimeout(() => {
+                    if (!streamConnected) {
+                        isConnectingProcess = false;
+                        switchToBackupOrReconnect();
+                    }
+                }, 6000);
+            });
+
+            peer.on('error', () => {
+                isConnectingProcess = false;
+                switchToBackupOrReconnect();
+            });
+
+            peer.on('disconnected', () => {
+                isConnectingProcess = false;
+                switchToBackupOrReconnect();
+            });
+        }
+
+        // ডিসকানেক্ট হলেই ক্যাশ ফাইল খুলে ব্যাকগ্রাউন্ডে চালানো
+        function switchToBackupOrReconnect() {
+            if (!isUserPlaying) return;
+
+            if (cachedChunks.length > 2 && !isPlayingBackup) {
+                isPlayingBackup = true;
+                const blob = new Blob(cachedChunks, { type: 'audio/webm' });
+                
+                if (backupObjectURL) URL.revokeObjectURL(backupObjectURL);
+                backupObjectURL = URL.createObjectURL(blob);
+
+                audioElement.pause();
+                audioElement.srcObject = null;
+                audioElement.src = backupObjectURL;
+                audioElement.loop = true; // নিরবচ্ছিন্নভাবে লুপ হিসেবে বাজবে
+                audioElement.play().catch(e => console.log(e));
+
+                statusBadge.innerText = "DISCONNECTED (OFFLINE CACHE)";
+                statusBadge.classList.remove('live');
+                infoText.innerText = "Studio disconnected! Playing cached recording until signal returns.";
+            }
+
+            // ব্যাকগ্রাউন্ডে প্রতি ৫ সেকেন্ড পর স্টুডিও চেক করবে
+            setTimeout(() => {
+                if (isUserPlaying && !isConnectingProcess) {
+                    connectToRadio();
+                }
+            }, 1000);
+        }
+
+        playBtn.addEventListener('click', () => {
+            if (!isUserPlaying) {
+                isUserPlaying = true;
+                isPlayingBackup = false;
+                connectToRadio();
+            } else {
+                isUserPlaying = false;
+                isPlayingBackup = false;
+                stopLiveConnection();
+                
+                audioElement.pause();
+                audioElement.srcObject = null;
+                audioElement.removeAttribute('src');
+
+                playBtn.innerText = "▶";
+                statusBadge.innerText = "Radio Paused";
+                statusBadge.classList.remove('live');
+                infoText.innerText = "Stream paused. Tap play to listen live.";
+            }
+        });
+
+        // সিগন্যাল ফিরে এলে তাত্ক্ষণিকভাবে মেমরি থেকে আবার লাইভে সুইচ
+        window.addEventListener('online', () => {
+            if (isUserPlaying) {
+                statusBadge.innerText = "Signal Restored! Syncing...";
+                setTimeout(() => {
+                    connectToRadio();
+                }, 1000);
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isUserPlaying) {
+                if (!statusBadge.classList.contains('live') && navigator.onLine && !isConnectingProcess) {
+                    connectToRadio();
+                }
+            }
+        });
 
         let deferredPrompt;
         const installBtn = document.getElementById('installBtn');
@@ -257,54 +437,18 @@
             installBtn.style.display = 'block';
         });
 
-        installBtn.addEventListener('click', () => {
+        installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        installBtn.style.display = 'none';
-                    }
-                    deferredPrompt = null;
-                });
+                const { outcome } = await deferredPrompt.userChoice;
+                deferredPrompt = null;
+                installBtn.style.display = 'none';
             }
         });
 
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js');
         }
-   
-
-
-
-
-
-  // ব্রাউজার ইন্সটল করার উপযুক্ত হলে বোতামটি দেখাবে
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'inline-block'; 
-  });
-
-  // বোতামে ক্লিক করলে ইন্সটল ডায়ালগ চালু হবে
-  installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      deferredPrompt = null;
-      installBtn.style.display = 'none';
-    }
-  });
-
-
-
-
-
- </script>
-
-
-
-
-
-
+    </script>
 </body>
 </html>
