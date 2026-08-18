@@ -6,11 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Accessories Radio 96.0 FM - Live Stream & Chat</title>
     
-    <!-- PWA Manifest File Link -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
 
-    <!-- Open Graph / Meta Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://arradio.shop/">
     <meta property="og:title" content="Accessories Roy Live Radio Network">
@@ -254,7 +252,6 @@
             Press play to listen live stream even on 2G networks.
         </div>
 
-        <!-- 🎙️ 📞 অন-এয়ার কল এবং লাইভ চ্যাট/ফারমাইস ইন্টারফেস -->
         <div class="interactive-section">
             <button id="btn-call-rj" class="call-rj-btn">📞 Call RJ On-Air (সরাসরি কথা বলুন)</button>
 
@@ -298,6 +295,8 @@
 
     <script>
         const RADIO_HOST_ID = 'low_bw_radio_station_node_1';
+        const FALLBACK_STREAM_URL = 'https://stream.zeno.fm/qc8wmknpwy8uv';
+        
         let peer = null;
         let dataConn = null;
         let currentCall = null;
@@ -339,7 +338,6 @@
             }
         }
 
-        // অডিও ব্যাকআপ ক্যাশিং সিস্টেম
         function startRecordingStream(stream) {
             try {
                 if (mediaRecorder && mediaRecorder.state !== 'inactive') {
@@ -381,15 +379,33 @@
             }
         }
 
+        function playFallbackStream() {
+            isPlayingBackup = true;
+            audioElement.pause();
+            audioElement.srcObject = null;
+            audioElement.src = FALLBACK_STREAM_URL;
+            audioElement.loop = false;
+            
+            audioElement.play().then(() => {
+                playBtn.innerText = "🔊";
+                statusBadge.innerText = "AUTO STREAM 📻";
+                statusBadge.classList.remove('live');
+                infoText.innerText = "Playing auto stream stream. Switch to Studio live as soon as online.";
+            }).catch(e => console.log("Fallback audio play error:", e));
+        }
+
         function connectToRadio() {
             if (isConnectingProcess) return;
             isConnectingProcess = true;
 
             stopLiveConnection();
 
+            statusBadge.innerText = "Connecting to studio...";
+            infoText.innerText = "Connecting to live radio broadcast...";
+
+            // লাইভ স্টুডিও কানেক্ট হওয়ার আগ পর্যন্ত ফলব্যাক স্ট্রিমিং চালু করা
             if (!isPlayingBackup) {
-                statusBadge.innerText = "Connecting to studio...";
-                infoText.innerText = "Connecting to live radio broadcast...";
+                playFallbackStream();
             }
 
             setupMediaSession();
@@ -399,7 +415,6 @@
             });
 
             peer.on('open', () => {
-                // 💬 Data Connection for Chat & Song Requests
                 dataConn = peer.connect(RADIO_HOST_ID);
                 
                 dataConn.on('data', (data) => {
@@ -415,7 +430,6 @@
                     chatLogs.scrollTop = chatLogs.scrollHeight;
                 });
 
-                // 🔊 Stream Connection for Listening Radio
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
                 const dest = ctx.createMediaStreamDestination();
 
@@ -434,12 +448,11 @@
                         streamConnected = true;
                         isConnectingProcess = false;
 
-                        if (isPlayingBackup) {
-                            isPlayingBackup = false;
-                            if (backupObjectURL) {
-                                URL.revokeObjectURL(backupObjectURL);
-                                backupObjectURL = null;
-                            }
+                        // ব্রডকাস্টিং শুরু হলে অটোমেটিক ফলব্যাক স্ট্রিম বন্ধ হয়ে লাইভ ব্রডকাস্ট চালু হবে
+                        isPlayingBackup = false;
+                        if (backupObjectURL) {
+                            URL.revokeObjectURL(backupObjectURL);
+                            backupObjectURL = null;
                         }
 
                         audioElement.pause();
@@ -449,7 +462,7 @@
 
                         audioElement.play().then(() => {
                             playBtn.innerText = "🔊";
-                            statusBadge.innerText = "LIVE 🔴";
+                            statusBadge.innerText = "LIVE STUDIO 🔴";
                             statusBadge.classList.add('live');
                             infoText.innerText = "Broadcasting live audio directly from the studio";
                         }).catch(err => console.log(err));
@@ -487,7 +500,6 @@
             });
         }
 
-        // ক্যাশ ফাইল থেকে অডিও অফলাইনে রানিং রাখা
         function switchToBackupOrReconnect() {
             if (!isUserPlaying) return;
 
@@ -504,16 +516,18 @@
                 audioElement.loop = true;
                 audioElement.play().catch(e => console.log(e));
 
-                statusBadge.innerText = "DISCONNECTED (OFFLINE CACHE)";
+                statusBadge.innerText = "OFFLINE CACHE 📻";
                 statusBadge.classList.remove('live');
                 infoText.innerText = "Studio disconnected! Playing cached audio until connection returns.";
+            } else if (!isPlayingBackup) {
+                playFallbackStream();
             }
 
             setTimeout(() => {
                 if (isUserPlaying && !isConnectingProcess) {
                     connectToRadio();
                 }
-            }, 1000);
+            }, 5000);
         }
 
         playBtn.addEventListener('click', () => {
