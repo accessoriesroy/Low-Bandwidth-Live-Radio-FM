@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Accessories Radio 96.0 FM - Live Stream & Chat</title>
     
+    <!-- PWA Manifest File Link -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0f172a">
 
+    <!-- Open Graph / Meta Tags -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://arradio.shop/">
     <meta property="og:title" content="Accessories Roy Live Radio Network">
@@ -109,7 +111,6 @@
         .ad-title-text { font-size: 11px; color: #f8fafc; font-weight: bold; margin-top: 4px; }
         .ad-subtitle-text { font-size: 9px; color: #94a3b8; margin-top: 2px; }
 
-        /* 📞 & 💬 নতুন লাইভ কল ও ইন্টারঅ্যাক্টিভ চ্যাট সেশন স্টাইল */
         .interactive-section {
             width: 100%;
             display: flex;
@@ -295,19 +296,37 @@
 
     <script>
         const RADIO_HOST_ID = 'low_bw_radio_station_node_1';
-        const FALLBACK_STREAM_URL = 'https://stream.zeno.fm/qc8wmknpwy8uv';
         
+        // প্লে করার পর প্রথম যে নির্দিষ্ট গানটি বাজবে
+        const INTRO_TRACK = 'https://ia600402.us.archive.org/29/items/generated-audio-august-15-2026-5-18-am-1/Generated%20Audio%20August%2015%2C%202026%20-%205_19AM.mp3';
+
+        // ব্যাকআপ লাইভ স্ট্রিম তালিকা
+        const FALLBACK_STREAMS = [
+            'https://stream.zeno.fm/qc8wmknpwy8uv',
+            'https://as1.digitalsynapsebd.com/proxy/bbdkka/stream',
+            'https://ia601908.us.archive.org/9/items/001-are-jane-kaises/001%20are%20jane%20kaise%21%21s.mp3',
+            'https://as1.digitalsynapsebd.com/proxy/bbdkka/stream'
+        ];
+
+        // ৩ মিনিট পর পর যে ঘোষণা লিংকটি চলবে
+        const ANNOUNCEMENT_TRACK = 'https://ia600402.us.archive.org/29/items/generated-audio-august-15-2026-5-18-am-1/Generated%20Audio%20August%2015%2C%202026%20-%205_19AM.mp3';
+
+        let currentBackupIndex = 0;
         let peer = null;
         let dataConn = null;
         let currentCall = null;
         let isUserPlaying = false;
         let isConnectingProcess = false;
 
-        // Cache and Backup System
         let mediaRecorder = null;
         let cachedChunks = [];
         let isPlayingBackup = false;
         let backupObjectURL = null;
+        let hasPlayedIntro = false;
+        let isPlayingAnnouncement = false;
+        
+        let intervalTimer = null;
+        let minutesCounter = 0;
 
         const playBtn = document.getElementById('play-btn');
         const statusBadge = document.getElementById('status-badge');
@@ -336,6 +355,47 @@
                     playBtn.innerText = "▶";
                 });
             }
+        }
+
+        function startTimedTracker() {
+            stopTimedTracker();
+            minutesCounter = 0;
+            intervalTimer = setInterval(() => {
+                minutesCounter++;
+                if (minutesCounter % 3 === 0) {
+                    play3MinAnnouncement();
+                }
+            }, 60000);
+        }
+
+        function stopTimedTracker() {
+            if (intervalTimer) {
+                clearInterval(intervalTimer);
+                intervalTimer = null;
+            }
+        }
+
+        function play3MinAnnouncement() {
+            if (!isUserPlaying || isPlayingAnnouncement) return;
+
+            isPlayingAnnouncement = true;
+            stopLiveConnection();
+
+            audioElement.pause();
+            audioElement.srcObject = null;
+            audioElement.src = ANNOUNCEMENT_TRACK;
+            audioElement.loop = false;
+
+            audioElement.play().then(() => {
+                playBtn.innerText = "🔊";
+                statusBadge.innerText = "ANNOUNCEMENT 📢";
+                statusBadge.classList.remove('live');
+                infoText.innerText = "Playing 3-minute scheduled announcement...";
+            }).catch(e => {
+                console.log("Announcement failed to play, restoring stream...", e);
+                isPlayingAnnouncement = false;
+                connectToRadio();
+            });
         }
 
         function startRecordingStream(stream) {
@@ -380,18 +440,67 @@
         }
 
         function playFallbackStream() {
+            if (FALLBACK_STREAMS.length === 0) return;
+
             isPlayingBackup = true;
             audioElement.pause();
             audioElement.srcObject = null;
-            audioElement.src = FALLBACK_STREAM_URL;
+            
+            const targetUrl = FALLBACK_STREAMS[currentBackupIndex];
+            audioElement.src = targetUrl;
             audioElement.loop = false;
             
             audioElement.play().then(() => {
                 playBtn.innerText = "🔊";
-                statusBadge.innerText = "AUTO STREAM 📻";
+                statusBadge.innerText = `AUTO STREAM (${currentBackupIndex + 1}) 📻`;
                 statusBadge.classList.remove('live');
-                infoText.innerText = "Playing auto stream stream. Switch to Studio live as soon as online.";
-            }).catch(e => console.log("Fallback audio play error:", e));
+                infoText.innerText = `Playing auto stream server ${currentBackupIndex + 1}`;
+            }).catch(e => {
+                console.log(`Stream ${currentBackupIndex + 1} failed. Trying next...`, e);
+                currentBackupIndex = (currentBackupIndex + 1) % FALLBACK_STREAMS.length;
+                if (isUserPlaying && isPlayingBackup) {
+                    playFallbackStream();
+                }
+            });
+        }
+
+        // অডিও বা ঘোষণা শেষ হলে প্রধান স্ট্রিম পুনরায় চালু করা
+        audioElement.onended = () => {
+            if (isUserPlaying) {
+                if (isPlayingAnnouncement) {
+                    isPlayingAnnouncement = false;
+                    connectToRadio();
+                } else {
+                    playFallbackStream();
+                }
+            }
+        };
+
+        audioElement.onerror = () => {
+            if (isPlayingAnnouncement) {
+                isPlayingAnnouncement = false;
+                connectToRadio();
+            } else if (isPlayingBackup && isUserPlaying) {
+                currentBackupIndex = (currentBackupIndex + 1) % FALLBACK_STREAMS.length;
+                playFallbackStream();
+            }
+        };
+
+        function playIntroThenConnect() {
+            audioElement.pause();
+            audioElement.srcObject = null;
+            audioElement.src = INTRO_TRACK;
+            audioElement.loop = false;
+
+            audioElement.play().then(() => {
+                hasPlayedIntro = true;
+                playBtn.innerText = "🔊";
+                statusBadge.innerText = "PLAYING ANNOUNCEMENT 📻";
+                infoText.innerText = "Playing initial announcement track...";
+            }).catch(e => {
+                console.log("Intro playback failed, connecting to stream directly", e);
+                connectToRadio();
+            });
         }
 
         function connectToRadio() {
@@ -403,12 +512,12 @@
             statusBadge.innerText = "Connecting to studio...";
             infoText.innerText = "Connecting to live radio broadcast...";
 
-            // লাইভ স্টুডিও কানেক্ট হওয়ার আগ পর্যন্ত ফলব্যাক স্ট্রিমিং চালু করা
-            if (!isPlayingBackup) {
+            if (!isPlayingBackup && hasPlayedIntro) {
                 playFallbackStream();
             }
 
             setupMediaSession();
+            startTimedTracker();
 
             peer = new Peer({
                 config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
@@ -448,7 +557,6 @@
                         streamConnected = true;
                         isConnectingProcess = false;
 
-                        // ব্রডকাস্টিং শুরু হলে অটোমেটিক ফলব্যাক স্ট্রিম বন্ধ হয়ে লাইভ ব্রডকাস্ট চালু হবে
                         isPlayingBackup = false;
                         if (backupObjectURL) {
                             URL.revokeObjectURL(backupObjectURL);
@@ -519,7 +627,7 @@
                 statusBadge.innerText = "OFFLINE CACHE 📻";
                 statusBadge.classList.remove('live');
                 infoText.innerText = "Studio disconnected! Playing cached audio until connection returns.";
-            } else if (!isPlayingBackup) {
+            } else if (!isPlayingBackup && hasPlayedIntro) {
                 playFallbackStream();
             }
 
@@ -534,10 +642,19 @@
             if (!isUserPlaying) {
                 isUserPlaying = true;
                 isPlayingBackup = false;
-                connectToRadio();
+                isPlayingAnnouncement = false;
+                
+                if (!hasPlayedIntro) {
+                    playIntroThenConnect();
+                } else {
+                    connectToRadio();
+                }
             } else {
                 isUserPlaying = false;
                 isPlayingBackup = false;
+                hasPlayedIntro = false;
+                isPlayingAnnouncement = false;
+                stopTimedTracker();
                 stopLiveConnection();
                 
                 audioElement.pause();
